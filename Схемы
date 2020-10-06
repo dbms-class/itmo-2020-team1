@@ -1,0 +1,22 @@
+Список таблиц:
+
+  TENANTS(id, first_name, last_name, email, phone_number, sex, bitrh_date, image_url)
+  
+  HOSTS(id, first_name, last_name, email, phone_number, sex, bitrh_date)
+  
+  APARTMENTS(id, host_id, latitude, longitude, country_id, address, name, album_url, cleaning_price, country_id)
+  
+  APARTMENT_PRICES(id, apartment_id, start_date, end_date, daily_price)
+  
+  AMENITIES(apartment_id, wifi, tv, pets, ...) // ALTER_TABLE ADD_COLUMN when needed, new columns false by default // НУЛЛ лучше по умолчанию - мы не знаем про старое жилье, есть ли оно (удобство) там или нет. А false - точно нет.
+
+  
+  APARTMENT_REVIEWS(id, contract_id, grade1, grade2, grade3, ..., gradeN) // gradeX - оценка по параметру
+
+  TENANT_REVIEWS(id, contract_id, text, grade)
+  
+  CONTRACTS(id, status, tenant_id, apartment_id, num_of_ppl, start_date, end_date)
+
+  ATTRACTIONS(id, name, start_date, end_date, latitude, longitude, genre)
+  
+  COUNTRIES(country_id, country_name, commission)
