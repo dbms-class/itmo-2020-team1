@@ -1,4 +1,4 @@
-Список таблиц:
+TABLE LIST:
 
   TENANTS(id, first_name, last_name, email, phone_number, sex, bitrh_date, image_url)
   
