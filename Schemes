@@ -1,22 +1,97 @@
 TABLE LIST:
 
-  TENANTS(id, first_name, last_name, email, phone_number, sex, bitrh_date, image_url)
+  CREATE TYPE PER_SEX AS ENUM ('Male', 'Female')
+
+  CREATE TABLE USERS(
+      id SERIAL PRIMARY KEY,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL ,
+      email TEXT UNIQUE NOT NULL ,
+      phone_number TEXT UNIQUE NOT NULL ,
+      sex PER_SEX,
+      bitrh_date DATE,
+      image_url TEXT
+    )
   
-  HOSTS(id, first_name, last_name, email, phone_number, sex, bitrh_date)
+CREATE TABLE COUNTRIES(
+      id SERIAL PRIMARY KEY,
+      country_name TEXT UNIQUE NOT NULL,
+      commission MONEY NOT NULL
+    )
+
+  CREATE TABLE APARTMENTS(
+      id SERIAL PRIMARY KEY, 
+      host_id INT, 
+      latitude NUMERIC CHECK (latitude >= -180 AND latitude <= 180),
+      longitude NUMERIC CHECK (longitude >= -180 AND longitude <= 180), 
+      country_id INT, 
+      address TEXT NOT NULL,  
+      name TEXT NOT NULL, 
+      album_url TEXT NOT NULL, 
+      cleaning_price MONEY,
+      CONSTRAINT FK_HOSTS FOREIGN KEY (host_id) REFERENCES USERS(id),
+      CONSTRAINT FK_COUNTRIES FOREIGN KEY (country_id) REFERENCES COUNTRIES(id)
+    )
   
-  APARTMENTS(id, host_id, latitude, longitude, country_id, address, name, album_url, cleaning_price, country_id)
+  CREATE TABLE APARTMENT_PRICES(
+      id SERIAL PRIMARY KEY,
+      apartment_id INT,
+      start_date TIMESTAMP NOT NULL,
+      end_date TIMESTAMP NOT NULL CHECK(end_date > start_date),
+      daily_price MONEY NOT NULL,
+      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id)
+    )
   
-  APARTMENT_PRICES(id, apartment_id, start_date, end_date, daily_price)
-  
-  AMENITIES(apartment_id, wifi, tv, pets, ...) // ALTER_TABLE ADD_COLUMN when needed, new columns false by default // НУЛЛ лучше по умолчанию - мы не знаем про старое жилье, есть ли оно (удобство) там или нет. А false - точно нет.
+  CREATE TABLE AMENITIES(
+      apartment_id INT,
+      wifi BOOLEAN,
+      tv BOOLEAN,
+      pets BOOLEAN,
+      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id)
+    ) // ALTER_TABLE ADD_COLUMN when needed, new columns false by default // НУЛЛ лучше по умолчанию - мы не знаем про старое жилье, есть ли оно (удобство) там или нет. А false - точно нет.
 
   
-  APARTMENT_REVIEWS(id, contract_id, grade1, grade2, grade3, ..., gradeN) // gradeX - оценка по параметру
+  CREATE TABLE APARTMENT_REVIEWS(
+      id SERIAL PRIMARY KEY,
+      contract_id INT,
+      grade1 INT CHECK (grade1 > 0 AND grade1 < 6),
+      grade2 INT CHECK (grade2 > 0 AND grade2 < 6),
+      grade3 INT CHECK (grade3 > 0 AND grade3 < 6),
+      CONSTRAINT fk_contract FOREIGN KEY(contract_id) REFERENCES CONTRACTS(id)
+    ) // gradeX - оценка по параметру
 
-  TENANT_REVIEWS(id, contract_id, text, grade)
+  CREATE TABLE TENANT_REVIEWS(
+      id SERIAL PRIMARY KEY,
+      contract_id INT,
+      text TEXT,
+      grade INT CHECK (grade > 0 AND grade < 6),
+      CONSTRAINT fk_contract FOREIGN KEY(contract_id) REFERENCES CONTRACTS(id)
+    )
   
-  CONTRACTS(id, status, tenant_id, apartment_id, num_of_ppl, start_date, end_date)
+  CREATE TYPE CTR_STATUS AS ENUM ('created', 'denied', 'processing')
 
-  ATTRACTIONS(id, name, start_date, end_date, latitude, longitude, genre)
+  CREATE TABLE CONTRACTS(
+      id SERIAL PRIMARY KEY,
+      status CTR_STATUS NOT NULL,
+      tenant_id INT,
+      apartment_id INT,
+      num_of_ppl INT CHECK (num_of_ppl > 0) NOT NULL,
+      start_date TIMESTAMP NOT NULL,
+      end_date TIMESTAMP NOT NULL CHECK (end_date >= start_date),
+      CONSTRAINT fk_tenant FOREIGN KEY(tenant_id) REFERENCES USERS(id),
+      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id)
+    )
+
+  CREATE TYPE ATR_GENRE AS ENUM ('museum', 'festival')
+
+  CREATE TABLE ATTRACTIONS(
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      start_date TIMESTAMP,
+      end_date TIMESTAMP CHECK (end_date >= start_date),
+      latitude NUMERIC CHECK (latitude >= -80 AND latitude <= 180),
+      longitude NUMERIC CHECK (longitude >= -180 AND longitude <= 180),
+      genre ATR_GENRE NOT NULL
+    ) // start_date и end_date может быть NULL - если достопримечательность вечна
   
-  COUNTRIES(country_id, country_name, commission)
+  
