@@ -1,9 +1,9 @@
 # itmo-2020-team1
 
-Alexander Krikun
+Alexander Krikun - krikun98
 
-Dmitriy Ivanov
+Dmitriy Ivanov - atmoPunk
 
-Akopian Tigran
+Akopian Tigran - takopian
 
 Golubev Kirill

@@ -27,6 +27,30 @@ CREATE TABLE COUNTRIES(
     // country_name - название страны  определяет страну- ключ, потому что мы не хотим, чтобы одна и таже страна могла взять разные коимссии
     // commission - комиссия, которую назначает сервис, в зависимости от страны
 
+  CREATE TYPE CTR_STATUS AS ENUM ('waiting', 'accepted', 'denied')
+  // Статус заявки - пользователь отправил заявку и ждет ответа, хост принял заявку, хост отклонил заявку.
+
+  CREATE TABLE CONTRACTS(
+      id SERIAL PRIMARY KEY,
+      status CTR_STATUS NOT NULL,
+      tenant_id INT NOT NULL,
+      apartment_id INT NOT NULL,
+      num_of_ppl INT CHECK (num_of_ppl > 0) NOT NULL,
+      start_date TIMESTAMP NOT NULL,
+      end_date TIMESTAMP NOT NULL CHECK (end_date >= start_date),
+      CONSTRAINT fk_tenant FOREIGN KEY(tenant_id) REFERENCES USERS(id),
+      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id),
+      CONSTRAINT uniq_ctr UNIQUE(tenant_id, apartment_id, start_date)
+    ) //заявки на аренду жилья в разных состояниях.
+    // id - уникальный ключ заявки
+    // status - текущий статус заявки
+    // tenant_id - id арендатора, подавшего заявку
+    // apartment_id - id апартаменов
+    // num_of_ppl - количество проживающих, согласно заявке
+    // start_date - дата начала проживания
+    // end_date - дата конца проживания
+    // uniq_ctr - заявка определяется арендатором, местом, которое он хочет снять, и временем.
+
   CREATE TABLE APARTMENTS(
       id SERIAL PRIMARY KEY, 
       host_id INT NOT NULL, 
@@ -113,29 +137,7 @@ CREATE TABLE COUNTRIES(
     // grade - оценка
     
   
-  CREATE TYPE CTR_STATUS AS ENUM ('waiting', 'accepted', 'denied')
-  // Статус заявки - пользователь отправил заявку и ждет ответа, хост принял заявку, хост отклонил заявку.
 
-  CREATE TABLE CONTRACTS(
-      id SERIAL PRIMARY KEY,
-      status CTR_STATUS NOT NULL,
-      tenant_id INT NOT NULL,
-      apartment_id INT NOT NULL,
-      num_of_ppl INT CHECK (num_of_ppl > 0) NOT NULL,
-      start_date TIMESTAMP NOT NULL,
-      end_date TIMESTAMP NOT NULL CHECK (end_date >= start_date),
-      CONSTRAINT fk_tenant FOREIGN KEY(tenant_id) REFERENCES USERS(id),
-      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id),
-      CONSTRAINT uniq_ctr UNIQUE(tenant_id, apartment_id, start_date)
-    ) //заявки на аренду жилья в разных состояниях.
-    // id - уникальный ключ заявки
-    // status - текущий статус заявки
-    // tenant_id - id арендатора, подавшего заявку
-    // apartment_id - id апартаменов
-    // num_of_ppl - количество проживающих, согласно заявке
-    // start_date - дата начала проживания
-    // end_date - дата конца проживания
-    // uniq_ctr - заявка определяется арендатором, местом, которое он хочет снять, и временем.
     
 
   CREATE TABLE DICT_GENRE_ATR(
