@@ -68,8 +68,8 @@ CREATE TABLE COUNTRIES(
       tenant_id INT NOT NULL,
       apartment_id INT NOT NULL,
       num_of_ppl INT CHECK (num_of_ppl > 0) NOT NULL,
-      start_date TIMESTAMP NOT NULL,
-      end_date TIMESTAMP NOT NULL CHECK (end_date >= start_date),
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL CHECK (end_date >= start_date),
       CONSTRAINT fk_tenant FOREIGN KEY(tenant_id) REFERENCES USERS(id),
       CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id),
       CONSTRAINT uniq_ctr UNIQUE(tenant_id, apartment_id, start_date)
@@ -150,8 +150,8 @@ CREATE TABLE COUNTRIES(
   CREATE TABLE ATTRACTIONS(
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
-      start_date TIMESTAMP,
-      end_date TIMESTAMP CHECK (end_date >= start_date),
+      start_date DATE,
+      end_date DATE CHECK (end_date >= start_date),
       latitude NUMERIC CHECK (latitude >= -90 AND latitude <= 90),
       longitude NUMERIC CHECK (longitude >= -180 AND longitude <= 180),
       genre_id INT,
