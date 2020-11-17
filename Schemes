@@ -11,7 +11,6 @@ TABLE LIST:
       sex PER_SEX,
       birth_date DATE,
       image_url TEXT,
-      CONSTRAINT uniq_user UNIQUE(email, phone_number)
     ) //пользователи системы (хосты и тенанты)
     // id - уникальный ключ человека, зарегистрированного в системе
     // first_name, last_name - имя и фамилия человека
@@ -21,7 +20,7 @@ TABLE LIST:
 CREATE TABLE COUNTRIES(
       id SERIAL PRIMARY KEY,
       country_name TEXT UNIQUE NOT NULL,
-      commission MONEY NOT NULL
+      commission MONEY NOT NULL CHECK (commission > 0)
     ) // Таблица стран, в которых доступен сервис.
     // id - уникальный ключ страны
     // country_name - название страны  определяет страну- ключ, потому что мы не хотим, чтобы одна и таже страна могла взять разные коимссии
@@ -32,7 +31,7 @@ CREATE TABLE COUNTRIES(
   CREATE TABLE APARTMENTS(
       id SERIAL PRIMARY KEY, 
       host_id INT NOT NULL, 
-      latitude NUMERIC CHECK (latitude >= -180 AND latitude <= 180),
+      latitude NUMERIC CHECK (latitude >= -90 AND latitude <= 90),
       longitude NUMERIC CHECK (longitude >= -180 AND longitude <= 180), 
       country_id INT NOT NULL, 
       address TEXT NOT NULL,  
@@ -41,11 +40,11 @@ CREATE TABLE COUNTRIES(
       beds INT NOT NULL CHECK(beds > 0),
       max_ppl INT NOT NULL CHECK(max_ppl > 0), 
       album_url TEXT, 
-      cleaning_price NOT NULL MONEY,
+      cleaning_price NOT NULL MONEY CHECK (cleaning_price > 0),
       CONSTRAINT FK_HOSTS FOREIGN KEY (host_id) REFERENCES USERS(id),
       CONSTRAINT FK_COUNTRIES FOREIGN KEY (country_id) REFERENCES COUNTRIES(id),
       CONSTRAINT uniq_apart UNIQUE(latitude, longtitude, address),
-      CONSTRAINT uniq_apart2 UNIQUE(country_id, addrees)
+      CONSTRAINT uniq_apart2 UNIQUE(country_id, address)
     ) // Апартаменты в которые может въехать и которые можно сдать.
     //id - униальный ключ апартаментов зарегистрированных в системе. 
     //latitude, longitude - координаты апартаментов
@@ -69,8 +68,8 @@ CREATE TABLE COUNTRIES(
       tenant_id INT NOT NULL,
       apartment_id INT NOT NULL,
       num_of_ppl INT CHECK (num_of_ppl > 0) NOT NULL,
-      start_date TIMESTAMP NOT NULL,
-      end_date TIMESTAMP NOT NULL CHECK (end_date >= start_date),
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL CHECK (end_date >= start_date),
       CONSTRAINT fk_tenant FOREIGN KEY(tenant_id) REFERENCES USERS(id),
       CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id),
       CONSTRAINT uniq_ctr UNIQUE(tenant_id, apartment_id, start_date)
@@ -86,11 +85,10 @@ CREATE TABLE COUNTRIES(
 
   CREATE TABLE APARTMENT_PRICES(
       id SERIAL PRIMARY KEY,
-      apartment_id INT,
+      apartment_id INT REFERENCES APARTMENTS,
       year INT NOT NULL,
-      start_week INT NOT NULL CHECK (start_week > -1 AND start_week < 52),
-      daily_price MONEY NOT NULL,
-      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id),
+      start_week INT NOT NULL CHECK (start_week > 0 AND start_week < 53),
+      daily_price MONEY NOT NULL CHECK (daily_price > 0),
       CONSTRAINT uniq_price UNIQUE(apartment_id, year, start_week)
     ) //Интервалы времени, за которые определена цена на аренду квартиру
     //id - уникальный ключ для участка времени
@@ -99,27 +97,29 @@ CREATE TABLE COUNTRIES(
     //daily_price - цена за сутки аренды
 
   CREATE TABLE AMENITIES(
-      apartment_id INT UNIQUE NOT NULL,
-      wifi BOOLEAN,
-      tv BOOLEAN,
-      pets BOOLEAN,
-      CONSTRAINT fk_apartment FOREIGN KEY(apartment_id) REFERENCES APARTMENTS(id)
-    ) //Таблица с описанием удобств доступных в апартаментах
+      id SERIAL PRIMARY KEY,
+      name TEXT UNIQUE,
+    ) 
+    
+  CREATE TABLE AMEN_TO_APT(
+    apartment_id INT REFERENCES APARTMENTS,
+    amenity_id INT REFERENCES AMENITIES,
+  )
+    //Таблица с описанием удобств доступных в апартаментах
     //apartment_id - идентификатор апартаменов, в которых описанием удобства
     //wifi, tv, pets, ... etc - наименования удобств
     
     
-    // ALTER_TABLE ADD_COLUMN when needed, new columns false by default // НУЛЛ лучше по умолчанию - мы не знаем про старое жилье, есть ли оно (удобство) там или нет. А false - точно нет.
+ 
 
   
   CREATE TABLE APARTMENT_REVIEWS(
       id SERIAL PRIMARY KEY,
-      contract_id INT UNIQUE NOT NULL, // Номер заявки
+      contract_id INT UNIQUE REFERENCES CONTRACTS, // Номер заявки
       text TEXT, 
       grade1 INT CHECK (grade1 > 0 AND grade1 < 6), // Оценка по параметру 1 (например чистота)
       grade2 INT CHECK (grade2 > 0 AND grade2 < 6),
       grade3 INT CHECK (grade3 > 0 AND grade3 < 6),
-      CONSTRAINT fk_contract FOREIGN KEY(contract_id) REFERENCES CONTRACTS(id),
     ) // Оценки от арендаторов 
     // id - униальный идентификатор отзыва
     // contract_id - идентификатор котракта, в рамках которого проиходит оценка, по заявке может быть только один отзыв
@@ -128,10 +128,9 @@ CREATE TABLE COUNTRIES(
  
   CREATE TABLE TENANT_REVIEWS(
       id SERIAL PRIMARY KEY,
-      contract_id INT UNIQUE NOT NULL, // Номер заявки
+      contract_id INT UNIQUE REFERENCES CONTRACTS, // Номер заявки
       text TEXT, // Текст отзыва
       grade INT CHECK (grade > 0 AND grade < 6), // Оценка
-      CONSTRAINT fk_contract FOREIGN KEY(contract_id) REFERENCES CONTRACTS(id)
     ) // Оценки от хозяина
     // id - униальный идентификатор отзыва
     // contract_id - идентификатор котракта, в рамках которого проиходит оценка, по заявке только один отзыв
@@ -151,9 +150,9 @@ CREATE TABLE COUNTRIES(
   CREATE TABLE ATTRACTIONS(
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
-      start_date TIMESTAMP,
-      end_date TIMESTAMP CHECK (end_date >= start_date),
-      latitude NUMERIC CHECK (latitude >= -80 AND latitude <= 180),
+      start_date DATE,
+      end_date DATE CHECK (end_date >= start_date),
+      latitude NUMERIC CHECK (latitude >= -90 AND latitude <= 90),
       longitude NUMERIC CHECK (longitude >= -180 AND longitude <= 180),
       genre_id INT,
       CONSTRAINT fk_genre FOREIGN KEY(genre_id) REFERENCES DICT_GENRE_ATR(id)
