@@ -3,9 +3,9 @@
 ## Веб сервер
 import cherrypy
 
-from .connect import parse_cmd_line
-from .connect import create_connection
-from .static import index
+from connect import parse_cmd_line
+from connect import create_connection
+from static import index
 
 @cherrypy.expose
 class App(object):
