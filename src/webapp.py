@@ -34,8 +34,8 @@ class App(object):
             for c in countries:
                 result.append({"id": c[0], "name": c[1]})
             return result
-    #Устанавливает стоимость аренды жилья apartment_id на неделе но
-    #мер week в значение price
+
+    #Устанавливает стоимость аренды жилья apartment_id на неделе номер week в значение price
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def update_price(self, apartment_id, year, week, price):
