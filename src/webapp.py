@@ -3,9 +3,9 @@
 ## Веб сервер
 import cherrypy
 
-from connect import parse_cmd_line
-from connect import create_connection
-from static import index
+from .connect import parse_cmd_line
+from .connect import create_connection
+from .static import index
 
 @cherrypy.expose
 class App(object):
@@ -22,30 +22,29 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def planets(self, planet_id = None):
+    def countries(self, country_id = None):
         with create_connection(self.args) as db:
             cur = db.cursor()
-            if planet_id is None:
-              cur.execute("SELECT id, name FROM Planet P")
+            if country_id is None:
+              cur.execute("SELECT id, country_name FROM COUNTRIES")
             else:
-              cur.execute("SELECT id, name FROM Planet WHERE id= %s", planet_id)
+              cur.execute("SELECT id, country_name FROM COUNTRIES id= %s", country_id)
             result = []
-            planets = cur.fetchall()
-            for p in planets:
-                result.append({"id": p[0], "name": p[1]})
-            return result
-
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
-    def commanders(self):
-        with create_connection(self.args) as db:
-            cur = db.cursor()
-            cur.execute("SELECT id, name FROM Commander")
-            result = []
-            commanders = cur.fetchall()
-            for c in commanders:
+            countries = cur.fetchall()
+            for c in countries:
                 result.append({"id": c[0], "name": c[1]})
             return result
+    #Устанавливает стоимость аренды жилья apartment_id на неделе но
+    #мер week в значение price
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def update_price(self, apartment_id, year, week, price):
+        with create_connection(self.args) as db:
+            cur = db.cursor()
+            cur.execute("""INSERT INTO APARTMENTS_PRICES(apartment_id, year, start_week, daily_price)
+            VALUES (%d, %d, %d, %d)
+            ON CONFLICT DO UPDATE  SET daily_price = EXCLUDED.daily_price""", apartment_id, year, week, price,),
+            return
 
 
 cherrypy.config.update({
