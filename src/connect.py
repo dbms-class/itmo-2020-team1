@@ -22,7 +22,7 @@ def parse_cmd_line():
     parser.add_argument('--pg-password', help='PostgreSQL password', default='')
     parser.add_argument('--pg-database', help='PostgreSQL database', default='')
     parser.add_argument('--sqlite-file', help='SQLite3 database file. Type :memory: to use in-memory SQLite3 database',
-                        default='sqlite.db')
+                        default=None)
     return parser.parse_args()
 
 
