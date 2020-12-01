@@ -58,6 +58,33 @@ class App(object):
             ON CONFLICT ON CONSTRAINT uniq_price DO UPDATE  SET daily_price = EXCLUDED.daily_price""", (apartment_id, year, week, price))
             return
 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_price(self, country_id, year, week, max_price=None, bed_count=None):
+        with create_connection(self.args) as db:
+            cur = db.cursor()
+            args = (country_id, year, week)
+            req_add = ""
+            if max_price is not None:
+                req_add += """ AND AP.daily_price <= %s"""
+                args += (max_price,)
+            if bed_count is not None:
+                req_add += """ AND A.beds >= %s"""
+                args += (bed_count,)
+            cur.execute("""SELECT A.id, A.name, A.beds, AP.year, AP.start_week, AP.daily_price
+                FROM APARTMENTS A JOIN APARTMENT_PRICES AP ON A.id = AP.apartment_id WHERE A.country_id = %s AND AP.year = %s
+                AND AP.start_week = %s""" + req_add, args)
+            maxp = None
+            minp = None
+            aparts_result = []
+            aparts = cur.fetchall()
+            for a in aparts:
+                maxp = max(maxp, a[5]) if maxp else a[5]
+                minp = min(minp, a[5]) if minp else a[5]
+                aparts_result.append({"apartment_id": a[0], "apartment_name": a[1], "bed_count": a[2], "year": a[3], "week": a[4], "price": a[5]})
+            result = {"max_price": maxp, "min_price": minp, "apartments": aparts_result}
+            return result
+
 
 cherrypy.config.update({
   'server.socket_host': '0.0.0.0',
