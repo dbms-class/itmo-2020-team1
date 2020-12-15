@@ -110,9 +110,15 @@ class App(object):
             or rev = (select min(rev) from apt_revs where rev >= %s::money);""", args)
             sales_result = []
             sales = cur.fetchall()
+            cur2 = db.cursor()
             for s in sales:
                 sales_result.append(
                     {"apartment_id": s[0], "old_price": s[1], "new_price": s[2], "expected_income": s[3]})
+                args = (s[2], s[0], week)
+                cur2.execute("""update apartment_prices 
+                set daily_price = %s 
+                where apartment_id = %s 
+                and start_week = %s""", args)
             return sales_result
 
 
