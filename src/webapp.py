@@ -92,8 +92,8 @@ class App(object):
         with create_connection(self.args) as db:
             cur = db.cursor()
             cur.execute("""SELECT AVG(daily_price::NUMERIC * 7) FROM APARTMENT_PRICES AP JOIN
-                        APARTMENTS A ON AP.apartment_id = A.id WHERE start_week = %s AND year = %s
-                        AND host_id = %s""", (week, year, owner_id))
+                        APARTMENTS A ON AP.apartment_id = A.id WHERE start_week = %s AND year = %s""",
+                        (week, year))
             avg_res = cur.fetchall()
             avg_price = avg_res[0][0]
 
