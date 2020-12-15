@@ -102,7 +102,10 @@ class App(object):
             cur = db.cursor()
             date = str(year) + "-01-01"
             cur.execute("""SELECT A.id, (AP.daily_price * 7)::NUMERIC AS old_price, (AP.daily_price * 7 - 350::MONEY)::NUMERIC AS new_price,
-            ((case when (AP.daily_price * 7 - 350::MONEY) < %s::MONEY THEN ((AP.daily_price * 7 - 350::MONEY) * 0.9) ELSE ((AP.daily_price * 7 - 350::MONEY) * 0.7) END) - AP.daily_price * 7 * 0.5)::NUMERIC AS expected_income
+            ((case when (AP.daily_price * 7 - 350::MONEY) < %s::MONEY
+                THEN ((AP.daily_price * 7 - 350::MONEY) * 0.9)
+                ELSE ((AP.daily_price * 7 - 350::MONEY) * 0.7)
+            END) - AP.daily_price * 7 * 0.5)::NUMERIC AS expected_income
             FROM APARTMENTS A JOIN APARTMENT_PRICES AP ON A.id = AP.apartment_id
             LEFT JOIN CONTRACTS C ON C.apartment_id = A.id
             WHERE C.start_date IS NULL OR ((%s::date + 7 * %s) NOT BETWEEN C.start_date AND C.end_date
@@ -112,9 +115,6 @@ class App(object):
             que_res = cur.fetchall()
             total_inc = 0
             for res in que_res:
-                if float(res[3]) <= 0:
-                    continue
-                apts_to_sale.append({"apartment_id": res[0], "old_price": float(res[1]), "new_price": float(res[2]), "expected_income": float(res[3])})
                 total_inc += float(res[3])
                 if total_inc >= float(target_price):
                     break
