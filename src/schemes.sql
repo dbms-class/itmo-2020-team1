@@ -104,15 +104,26 @@ CREATE TABLE ATTRACTIONS(
 
 INSERT INTO COUNTRIES(country_name, commission) VALUES ('Russia', 1::Money), ('Sweden', 2::Money);
 
-INSERT INTO USERS(first_name, last_name, email, phone_number) VALUES ('Hostname', 'Hostsurname', 'Hostmail', 'Hostnumber');
+INSERT INTO USERS(first_name, last_name, email, phone_number) VALUES ('Hostname', 'Hostsurname', 'Hostmail', 'Hostnumber'), ('Guest', 'Guest', 'Guest', 'Guest');
 
 INSERT INTO APARTMENTS(host_id, latitude, longitude, country_id, address, name, rooms, beds, max_ppl, cleaning_price) VALUES
     (1, 0, 0, 1, 'Moscow', 'Kremlin', 1, 1, 1, 1::MONEY),
     (1, 0, 1, 1, 'Saint-Petersburg', 'Vyazemskiy per., 5-7', 100, 200, 200, 3::MONEY),
-    (1, 1, 1, 2, 'Sweden city', 'Sweden house', 2, 3, 6, 5::MONEY);
+    (1, 1, 1, 2, 'Sweden city', 'Sweden house', 2, 3, 6, 5::MONEY),
+    (1, 2, 3, 1, 'ad',          'na',           1, 1, 1, 1::MONEY),
+    (1, 3, 4, 1, 'add',  'naa',  2, 2, 2, 2::MONEY),
+    (1, 4, 5, 1, 'addd', 'naaa', 3, 3, 3, 3::MONEY),
+    (1, 5, 6, 1, 'adddd', 'naaaa', 3, 3, 3, 3::MONEY);
 
 INSERT INTO APARTMENT_PRICES(apartment_id, year, start_week, daily_price) VALUES
     (1, 2020, 1, 2),
     (1, 2020, 2, 3),
     (2, 2020, 1, 5),
-    (3, 2020, 2, 6);
+    (3, 2020, 2, 6),
+    (4, 2020, 1, 15),
+    (5, 2020, 1, 20),
+    (6, 2020, 1, 25),
+    (7, 2020, 1, 50);
+
+INSERT INTO CONTRACTS(status, tenant_id, apartment_id, num_of_ppl, start_date, end_date) VALUES 
+    ('accepted'::CTR_STATUS, 2, 5, 1, '2019-12-30', '2021-12-30');
