@@ -104,7 +104,8 @@ class App(object):
             ,apt_revs as (
             select apartment_id, old_price, new_price, expected_income, 
             sum(expected_income) over (order by expected_income desc) as rev 
-            from apt_profits)
+            from apt_profits
+            where expected_income > 0::money)
             SELECT apartment_id, old_price, new_price, expected_income from apt_revs
             where rev < %s::money
             or rev = (select min(rev) from apt_revs where rev >= %s::money);""", args)
