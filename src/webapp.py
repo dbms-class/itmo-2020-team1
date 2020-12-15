@@ -90,7 +90,7 @@ class App(object):
     def appt_sale(self, owner_id, week, target_plus):
         with create_connection(self.args) as db:
             cur = db.cursor()
-            args = (owner_id, week, week, target_plus)
+            args = (owner_id, week, week, target_plus, target_plus)
             cur.execute("""WITH apt_profits AS (
             SELECT ap_pr.apartment_id, ap_pr.daily_price as old_price, (ap_pr.daily_price - 50::money) as new_price,
             ((case when (ap_pr.daily_price::numeric - 50) > (select avg(daily_price::numeric) from apartment_prices) 
