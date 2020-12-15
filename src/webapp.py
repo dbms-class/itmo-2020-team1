@@ -85,6 +85,36 @@ class App(object):
             result = {"max_price": maxp, "min_price": minp, "apartments": aparts_result}
             return result
 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def appt_sale(self, owner_id, week, target_plus):
+        with create_connection(self.args) as db:
+            cur = db.cursor()
+            args = (owner_id, week, week, target_plus)
+            cur.execute("""WITH apt_profits AS (
+            SELECT ap_pr.apartment_id, ap_pr.daily_price as old_price, (ap_pr.daily_price - 50::money) as new_price,
+            ((case when (ap_pr.daily_price::numeric - 50) > (select avg(daily_price::numeric) from apartment_prices) 
+            then (ap_pr.daily_price - 50::money)*0.7 
+            else (ap_pr.daily_price - 50::money)*0.9 end) - ap_pr.daily_price * 0.5)*7 as expected_income
+            from apartment_prices ap_pr
+            join apartments ap on ap.id = ap_pr.apartment_id
+            where ap.host_id = %s
+            and ap_pr.start_week = %s
+            and ap.id not in (select apartment_id from contracts where extract(week from start_date) = %s))
+            ,apt_revs as (
+            select apartment_id, old_price, new_price, expected_income, 
+            sum(expected_income) over (order by expected_income desc) as rev 
+            from apt_profits)
+            SELECT apartment_id, old_price, new_price, expected_income from apt_revs
+            where rev < %s::money
+            or rev = (select min(rev) from apt_revs where rev >= %s::money);""", args)
+            sales_result = []
+            sales = cur.fetchall()
+            for s in sales:
+                sales_result.append(
+                    {"apartment_id": s[0], "old_price": s[1], "new_price": s[2], "expected_income": s[3]})
+            return sales_result
+
 
 cherrypy.config.update({
   'server.socket_host': '0.0.0.0',

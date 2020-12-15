@@ -112,7 +112,7 @@ INSERT INTO APARTMENTS(host_id, latitude, longitude, country_id, address, name, 
     (1, 1, 1, 2, 'Sweden city', 'Sweden house', 2, 3, 6, 5::MONEY);
 
 INSERT INTO APARTMENT_PRICES(apartment_id, year, start_week, daily_price) VALUES
-    (1, 2020, 1, 2),
-    (1, 2020, 2, 3),
-    (2, 2020, 1, 5),
-    (3, 2020, 2, 6);
+    (1, 2020, 1, 1002),
+    (1, 2020, 2, 1003),
+    (2, 2020, 1, 1005),
+    (3, 2020, 2, 1006);
