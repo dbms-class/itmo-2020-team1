@@ -85,6 +85,49 @@ class App(object):
             result = {"max_price": maxp, "min_price": minp, "apartments": aparts_result}
             return result
 
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def appt_sale(self, owner_id, year, week, target_price):
+        avg_price = None
+        with create_connection(self.args) as db:
+            cur = db.cursor()
+            cur.execute("""SELECT AVG(daily_price::NUMERIC * 7) FROM APARTMENT_PRICES AP JOIN
+                        APARTMENTS A ON AP.apartment_id = A.id WHERE start_week = %s AND year = %s""",
+                        (week, year))
+            avg_res = cur.fetchall()
+            avg_price = avg_res[0][0]
+
+        apts_to_sale = []
+        with create_connection(self.args) as db:
+            cur = db.cursor()
+            date = str(year) + "-01-01"
+            cur.execute("""SELECT A.id, (AP.daily_price * 7)::NUMERIC AS old_price, (AP.daily_price * 7 - 350::MONEY)::NUMERIC AS new_price,
+            ((case when (AP.daily_price * 7 - 350::MONEY) < %s::MONEY
+                THEN ((AP.daily_price * 7 - 350::MONEY) * 0.9)
+                ELSE ((AP.daily_price * 7 - 350::MONEY) * 0.7)
+            END) - AP.daily_price * 7 * 0.5)::NUMERIC AS expected_income
+            FROM APARTMENTS A JOIN APARTMENT_PRICES AP ON A.id = AP.apartment_id
+            LEFT JOIN CONTRACTS C ON C.apartment_id = A.id
+            WHERE C.start_date IS NULL OR ((%s::date + 7 * %s) NOT BETWEEN C.start_date AND C.end_date
+            AND A.host_id = %s)
+            ORDER BY expected_income DESC""",
+                (avg_price, date, week, owner_id))
+            que_res = cur.fetchall()
+            total_inc = 0
+            for res in que_res:
+                total_inc += float(res[3])
+                if total_inc >= float(target_price):
+                    break
+            print(apts_to_sale)
+
+        with create_connection(self.args) as db:
+            cur = db.cursor()
+            for apt in apts_to_sale:
+                cur.execute("""UPDATE APARTMENT_PRICES SET daily_price = %s::MONEY WHERE apartment_id = %s AND year = %s AND start_week = %s""",
+                        (apt['new_price'] / 7, apt['apartment_id'], year, week))
+
+        return apts_to_sale
+
 
 cherrypy.config.update({
   'server.socket_host': '0.0.0.0',
