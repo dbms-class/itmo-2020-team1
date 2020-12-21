@@ -116,6 +116,7 @@ class App(object):
             total_inc = 0
             for res in que_res:
                 total_inc += float(res[3])
+                apts_to_sale.append({"apartment_id": res[0], "old_price": float(res[1]), "new_price": float(res[2]), "expected_income": float(res[3])})
                 if total_inc >= float(target_price):
                     break
             print(apts_to_sale)
